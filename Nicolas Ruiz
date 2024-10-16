@@ -1,0 +1,323 @@
+echo "# Time-Management" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/nico1972matu/Time-Management.git
+git push -u origin main
+import React, { useState } from 'react'
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom'
+import { Bell, Calendar, DollarSign, FileText, Clock, Menu, X, Plus, Trash } from 'lucide-react'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+
+type Task = {
+  id: number;
+  title: string;
+  time: string;
+}
+
+type Transaction = {
+  id: number;
+  type: 'income' | 'expense';
+  amount: number;
+  description: string;
+}
+
+function Header() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+
+  return (
+    <header className="sticky top-0 z-50 w-full border-b bg-blue-600 text-white">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          <div className="flex items-center">
+            <Link to="/" className="flex-shrink-0">
+              <Clock className="h-8 w-8" />
+            </Link>
+            <div className="hidden md:block">
+              <div className="ml-10 flex items-baseline space-x-4">
+                <Link to="/agenda" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-500">
+                  <Calendar className="h-4 w-4 inline-block mr-1" />
+                  Agenda
+                </Link>
+                <Link to="/budget" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-500">
+                  <DollarSign className="h-4 w-4 inline-block mr-1" />
+                  Budget
+                </Link>
+                <Link to="/report" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-500">
+                  <FileText className="h-4 w-4 inline-block mr-1" />
+                  Report
+                </Link>
+              </div>
+            </div>
+          </div>
+          <div className="hidden md:block">
+            <div className="ml-4 flex items-center md:ml-6">
+              <button className="p-1 rounded-full hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-blue-600 focus:ring-white">
+                <Bell className="h-6 w-6" />
+              </button>
+            </div>
+          </div>
+          <div className="-mr-2 flex md:hidden">
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="inline-flex items-center justify-center p-2 rounded-md text-white hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-blue-600 focus:ring-white"
+            >
+              <span className="sr-only">Open main menu</span>
+              <Menu className={`${isMenuOpen ? 'hidden' : 'block'} h-6 w-6`} />
+              <X className={`${isMenuOpen ? 'block' : 'hidden'} h-6 w-6`} />
+            </button>
+          </div>
+        </div>
+      </div>
+      <div className={`${isMenuOpen ? 'block' : 'hidden'} md:hidden`}>
+        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+          <Link to="/agenda" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-500">Agenda</Link>
+          <Link to="/budget" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-500">Budget</Link>
+          <Link to="/report" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-500">Report</Link>
+        </div>
+      </div>
+    </header>
+  )
+}
+
+function AgendaPage() {
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [newTask, setNewTask] = useState({ title: '', time: '' })
+
+  const addTask = () => {
+    if (newTask.title && newTask.time) {
+      setTasks([...tasks, { id: Date.now(), ...newTask }])
+      setNewTask({ title: '', time: '' })
+    }
+  }
+
+  const deleteTask = (id: number) => {
+    setTasks(tasks.filter(task => task.id !== id))
+  }
+
+  return (
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <Card>
+        <CardHeader>
+          <CardTitle>Agenda</CardTitle>
+          <CardDescription>Manage your daily tasks</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-2">
+            {tasks.map(task => (
+              <li key={task.id} className="flex items-center justify-between p-2 bg-gray-100 rounded">
+                <span>{task.title} at {task.time}</span>
+                <button onClick={() => deleteTask(task.id)} className="text-red-600 hover:text-red-800">
+                  <Trash className="h-4 w-4" />
+                </button>
+              </li>
+            ))}
+          </ul>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button className="mt-4">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Task
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Task</DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="task-title" className="text-right">Title</Label>
+                  <Input
+                    id="task-title"
+                    value={newTask.title}
+                    onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                    className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="task-time" className="text-right">Time</Label>
+                  <Input
+                    id="task-time"
+                    value={newTask.time}
+                    onChange={(e) => setNewTask({ ...newTask, time: e.target.value })}
+                    className="col-span-3"
+                  />
+                </div>
+              </div>
+              <Button onClick={addTask}>Add Task</Button>
+            </DialogContent>
+          </Dialog>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+function BudgetPage() {
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [newTransaction, setNewTransaction] = useState({ type: 'income', amount: 0, description: '' })
+
+  const addTransaction = () => {
+    if (newTransaction.amount && newTransaction.description) {
+      setTransactions([...transactions, { id: Date.now(), ...newTransaction }])
+      setNewTransaction({ type: 'income', amount: 0, description: '' })
+    }
+  }
+
+  const deleteTransaction = (id: number) => {
+    setTransactions(transactions.filter(transaction => transaction.id !== id))
+  }
+
+  return (
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <Card>
+        <CardHeader>
+          <CardTitle>Budget</CardTitle>
+          <CardDescription>Manage your income and expenses</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-2">
+            {transactions.map(transaction => (
+              <li key={transaction.id} className="flex items-center justify-between p-2 bg-gray-100 rounded">
+                <span className={transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}>
+                  {transaction.type === 'income' ? '+' : '-'} ${transaction.amount} - {transaction.description}
+                </span>
+                <button onClick={() => deleteTransaction(transaction.id)} className="text-red-600 hover:text-red-800">
+                  <Trash className="h-4 w-4" />
+                </button>
+              </li>
+            ))}
+          </ul>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button className="mt-4">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Transaction
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Transaction</DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="transaction-type" className="text-right">Type</Label>
+                  <select
+                    id="transaction-type"
+                    value={newTransaction.type}
+                    onChange={(e) => setNewTransaction({ ...newTransaction, type: e.target.value as 'income' | 'expense' })}
+                    className="col-span-3 form-select block w-full mt-1"
+                  >
+                    <option value="income">Income</option>
+                    <option value="expense">Expense</option>
+                  </select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="transaction-amount" className="text-right">Amount</Label>
+                  <Input
+                    id="transaction-amount"
+                    type="number"
+                    value={newTransaction.amount}
+                    onChange={(e) => setNewTransaction({ ...newTransaction, amount: parseFloat(e.target.value) })}
+                    className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="transaction-description" className="text-right">Description</Label>
+                  <Input
+                    id="transaction-description"
+                    value={newTransaction.description}
+                    onChange={(e) => setNewTransaction({ ...newTransaction, description: e.target.value })}
+                    className="col-span-3"
+                  />
+                </div>
+              </div>
+              <Button onClick={addTransaction}>Add Transaction</Button>
+            </DialogContent>
+          </Dialog>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+function ReportPage() {
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+
+  // In a real application, you would fetch this data from a backend or local storage
+  React.useEffect(() => {
+    // Simulating data fetch
+    setTasks([
+      { id: 1, title: "Team Meeting", time: "10:00 AM" },
+      { id: 2, title: "Project Deadline", time: "3:00 PM" },
+    ])
+    setTransactions([
+      { id: 1, type: 'income', amount: 5000, description: "Salary" },
+      { id: 2, type: 'expense', amount: 1000, description: "Rent" },
+    ])
+  }, [])
+
+  const calculateBudget = () => {
+    const income = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0)
+    const expenses = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0)
+    return { income, expenses, balance: income - expenses }
+  }
+
+  const { income, expenses, balance } = calculateBudget()
+
+  return (
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <Card>
+        <CardHeader>
+          <CardTitle>Summary Report</CardTitle>
+          <CardDescription>Overview of your agenda and budget</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <h3 className="text-lg font-semibold mb-2">Agenda Summary</h3>
+          <ul className="list-disc pl-5 mb-4">
+            {tasks.map(task => (
+              <li key={task.id}>{task.title} at {task.time}</li>
+            ))}
+          </ul>
+          <h3 className="text-lg font-semibold mb-2">Budget Summary</h3>
+          <div className="space-y-2">
+            <p>Total Income: <span className="font-semibold text-green-600">${income}</span></p>
+            <p>Total Expenses: <span className="font-semibold text-red-600">${expenses}</span></p>
+            <p>Balance: <span className={`font-semibold ${balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>${balance}</span></p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+export default function App() {
+  return (
+    <Router>
+      <div className="flex flex-col min-h-screen bg-gray-100">
+        <Header />
+        <main className="flex-grow">
+          <Routes>
+            <Route path="/agenda" element={<AgendaPage />} />
+            <Route path="/budget" element={<BudgetPage />} />
+            <Route path="/report" element={<ReportPage />} />
+            <Route path="/" element={<AgendaPage />} />
+          </Routes>
+        </main>
+        <footer className="bg-white">
+          <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+            <p className="text-center text-sm text-gray-500">
+              &copy; 2023 Time & Budget Manager. All rights reserved.
+            </p>
+          </div>
+        </footer>
+      </div>
+    </Router>
+  )
+}
